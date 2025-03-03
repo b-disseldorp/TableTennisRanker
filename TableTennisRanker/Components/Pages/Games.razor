@@ -1,0 +1,128 @@
+@page "/Games"
+@using TableTennisRanker.Data
+
+@inject CompetitorManager CompetitorManager
+@inject IFileService FileService
+
+<PageTitle>Games</PageTitle>
+
+<RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="5" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+                Data="@_games" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or" SelectionMode="DataGridSelectionMode.Single" @bind-Value="@_selectedGames">
+    <Columns>
+        <RadzenDataGridColumn Property="@nameof(Game.Id)" Filterable="false" Title="ID" Frozen="true" Width="80px" TextAlign="TextAlign.Center" />
+        <RadzenDataGridColumn Property="@nameof(Game.Challenger)" Title="Challenger" Frozen="true" Width="160px" />
+        <RadzenDataGridColumn Property="@nameof(Game.Defender)" Title="Defender" Frozen="true" Width="160px" />
+        <RadzenDataGridColumn Property="@nameof(Game.ScoreChallenger)" Title="Challengers Score" Width="160px"/>
+        <RadzenDataGridColumn Property="@nameof(Game.ScoreDefender)" Title="Defenders Score" Width="160px"/>
+    </Columns>
+</RadzenDataGrid>
+<div class="rz-p-0 rz-p-md-12">
+    <RadzenRow Gap="1rem">
+        <RadzenColumn Size="12" SizeSM="6">
+            <RadzenStack>
+                <RadzenFormField Text="Challenger">
+                    <ChildContent>
+                        <RadzenDropDown Name="Challenger" Data="@_competitors" @bind-Value="@_selectedChallenger" />
+                    </ChildContent>
+                    <Helper>
+                        <RadzenRequiredValidator Component="Challenger" Text="First name is required." />
+                    </Helper>
+                </RadzenFormField>
+                <RadzenFormField Text="Defender">
+                    <ChildContent>
+                        <RadzenDropDown Name="Defender" Data="@_competitors" @bind-Value="@_selectedDefender" />
+                    </ChildContent>
+                    <Helper>
+                        <RadzenRequiredValidator Component="Defender" Text="The Challengers score is required." />
+                    </Helper>
+                </RadzenFormField>
+                <RadzenFormField Text="The Challengers score">
+                    <ChildContent>
+                        <RadzenNumeric Name="ScoreChallenger" @bind-Value="@_selectedScoreChallenger" />
+                    </ChildContent>
+                    <Helper>
+                        <RadzenRequiredValidator Component="ScoreChallenger" Text="The Challengers score is required." />
+                    </Helper>
+                </RadzenFormField>
+                <RadzenFormField Text="The Defender score">
+                    <ChildContent>
+                        <RadzenNumeric Name="ScoreDefender" @bind-Value="@_selectedScoreDefender" />
+                    </ChildContent>
+                    <Helper>
+                        <RadzenRequiredValidator Component="ScoreDefender" Text="The Defender score is required." />
+                    </Helper>
+                </RadzenFormField>
+                <RadzenButton ButtonType="ButtonType.Submit" Text="Submit" Click="OnSubmit"></RadzenButton>
+            </RadzenStack>
+        </RadzenColumn>
+    </RadzenRow>
+</div>
+
+@code {
+
+    List<Game> _allGames = null!;
+    IQueryable<Game>? _games;
+    IList<Game?>? _selectedGames;
+
+    readonly Game _game = new();
+
+    IEnumerable<string> _competitors = null!;
+    string _selectedChallenger = "";
+    string _selectedDefender = "";
+    int _selectedScoreChallenger;
+    int _selectedScoreDefender;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        _allGames = await FileService.LoadGames() ?? [];
+        _games = new EnumerableQuery<Game>(_allGames);
+        _selectedGames = [_games.FirstOrDefault()];
+
+        _competitors = CompetitorManager.Competitors.Select(competitor => competitor.ToString());
+    }
+
+    async Task OnSubmit()
+    {
+        if (_selectedChallenger == _selectedDefender)
+        {
+            return;
+        }
+        var id = _allGames.LastOrDefault() == null ? 0 : _allGames.Last().Id + 1;
+
+        var currentGame = new Game(id, CompetitorManager.GetCompetitor(_selectedChallenger)!,
+            CompetitorManager.GetCompetitor(_selectedDefender)!, _selectedScoreChallenger, _selectedScoreDefender);
+        _allGames.Add(currentGame);
+
+        _games = new EnumerableQuery<Game>(_allGames);
+        await FileService.SaveGames(_allGames);
+        GivePoints(currentGame);
+        await FileService.SaveCompetitors(CompetitorManager.Competitors);
+    }
+
+    private void GivePoints(Game game)
+    {
+        var challenger = CompetitorManager.GetCompetitor(game.Challenger.ToString());
+        var defender = CompetitorManager.GetCompetitor(game.Defender.ToString());
+
+        if (challenger == null || defender == null)
+        {
+            throw new Exception();
+        }
+        if (game.ScoreChallenger > game.ScoreDefender)
+        {
+            challenger.Points++;
+            defender.Points--;
+        }
+        else
+        {
+            defender.Points++;
+            challenger.Points--;
+        }
+
+        challenger.GamesPlayed++;
+        defender.GamesPlayed++;
+    }
+
+}

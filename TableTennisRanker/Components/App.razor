@@ -9,11 +9,14 @@
     <link rel="stylesheet" href="app.css"/>
     <link rel="stylesheet" href="TableTennisRanker.styles.css"/>
     <link rel="icon" type="image/png" href="favicon.png"/>
-    <HeadOutlet/>
+    <RadzenTheme Theme="material" @rendermode="InteractiveServer" />
+    <HeadOutlet @rendermode="InteractiveServer"/>
 </head>
 
 <body>
-    <Routes/>
+    <Routes @rendermode="InteractiveServer"/>
+    <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
+
     <script src="_framework/blazor.web.js"></script>
 </body>
 
