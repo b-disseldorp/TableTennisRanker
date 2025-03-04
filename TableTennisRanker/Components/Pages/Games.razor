@@ -96,8 +96,8 @@
         _allGames.Add(currentGame);
 
         _games = new EnumerableQuery<Game>(_allGames);
+        currentGame.GivePoints(CompetitorManager);
         await FileService.SaveGames(_allGames);
-        GivePoints(currentGame);
         await FileService.SaveCompetitors(CompetitorManager.Competitors);
     }
 
@@ -110,16 +110,18 @@
         {
             throw new Exception();
         }
+        var cTemp = challenger.Points;
+        var dTemp = defender.Points;
         if (game.ScoreChallenger > game.ScoreDefender)
         {
-            challenger.Points++;
-            defender.Points--;
+            EloCalculator.CalculateEloRating(ref cTemp, ref dTemp, 30, 1);
         }
         else
         {
-            defender.Points++;
-            challenger.Points--;
+            EloCalculator.CalculateEloRating(ref cTemp, ref dTemp, 30, 0);
         }
+        challenger.Points = cTemp;
+        defender.Points = dTemp;
 
         challenger.GamesPlayed++;
         defender.GamesPlayed++;
