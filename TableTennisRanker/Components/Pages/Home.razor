@@ -12,7 +12,7 @@
         <RadzenDataGridColumn Property="@nameof(Competitor.Id)" Filterable="false" Title="ID" Frozen="true" Width="80px" TextAlign="TextAlign.Center" />
         <RadzenDataGridColumn Property="@nameof(Competitor.FirstName)" Title="First Name" Frozen="true" Width="160px" />
         <RadzenDataGridColumn Property="@nameof(Competitor.LastName)" Title="Last Name" Width="160px"/>
-        <RadzenDataGridColumn Property="@nameof(Competitor.Points)" Title="Points" Width="160px"/>
+        <RadzenDataGridColumn Property="@nameof(Competitor.EloPoints)" Title="Points" Width="160px"/>
         <RadzenDataGridColumn Property="@nameof(Competitor.GamesPlayed)" Title="Games Played" Width="160px"/>
     </Columns>
 </RadzenDataGrid>
@@ -58,7 +58,7 @@
     async Task OnSubmit(Competitor competitor)
     {
         competitor.Id = CompetitorManager.Competitors.LastOrDefault() == null ? 0 : CompetitorManager.Competitors.Last().Id + 1;
-        CompetitorManager.Competitors.Add(new Competitor(competitor.Id, competitor.FirstName, competitor.LastName, competitor.Points, competitor.GamesPlayed));
+        CompetitorManager.Competitors.Add(new Competitor(competitor.Id, competitor.FirstName, competitor.LastName, competitor.EloPoints, competitor.GamesPlayed));
         _competitors = new EnumerableQuery<Competitor>(CompetitorManager.Competitors);
         await FileService.SaveCompetitors(CompetitorManager.Competitors);
     }

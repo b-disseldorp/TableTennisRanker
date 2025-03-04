@@ -2,18 +2,18 @@ namespace TableTennisRanker.Data;
 
 public class Competitor()
 {
-    public Competitor(int id, string firstName, string lastName, int points, int gamesPlayed) : this()
+    public Competitor(int id, string firstName, string lastName, int eloPoints, int gamesPlayed) : this()
     {
         Id = id;
         FirstName = firstName;
         LastName = lastName;
-        Points = points;
+        EloPoints = eloPoints;
         GamesPlayed = gamesPlayed;
     }
     public int Id { get; set; }
     public string FirstName { get; set; } = "";
     public string LastName { get; set; } = "";
-    public int Points { get; set; } = 1000;
+    public int EloPoints { get; set; } = 1000;
     public int GamesPlayed{ get; set; }
 
     public override string ToString()

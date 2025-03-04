@@ -9,11 +9,13 @@
 <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="5" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
                 Data="@_games" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or" SelectionMode="DataGridSelectionMode.Single" @bind-Value="@_selectedGames">
     <Columns>
-        <RadzenDataGridColumn Property="@nameof(Game.Id)" Filterable="false" Title="ID" Frozen="true" Width="80px" TextAlign="TextAlign.Center" />
+        <RadzenDataGridColumn Property="@nameof(Game.Id)" Filterable="false" Title="ID" Frozen="true" Width="80px" TextAlign="TextAlign.Center" SortOrder="SortOrder.Descending"/>
         <RadzenDataGridColumn Property="@nameof(Game.Challenger)" Title="Challenger" Frozen="true" Width="160px" />
         <RadzenDataGridColumn Property="@nameof(Game.Defender)" Title="Defender" Frozen="true" Width="160px" />
         <RadzenDataGridColumn Property="@nameof(Game.ScoreChallenger)" Title="Challengers Score" Width="160px"/>
         <RadzenDataGridColumn Property="@nameof(Game.ScoreDefender)" Title="Defenders Score" Width="160px"/>
+        <RadzenDataGridColumn Property="@nameof(Game.ChallengerEloPoints)" Title="Challengers gained/lost Elo" Width="160px"/>
+        <RadzenDataGridColumn Property="@nameof(Game.DefenderEloPoints)" Title="Defenders gained/lost Elo" Width="160px"/>
     </Columns>
 </RadzenDataGrid>
 <div class="rz-p-0 rz-p-md-12">
@@ -100,31 +102,4 @@
         await FileService.SaveGames(_allGames);
         await FileService.SaveCompetitors(CompetitorManager.Competitors);
     }
-
-    private void GivePoints(Game game)
-    {
-        var challenger = CompetitorManager.GetCompetitor(game.Challenger.ToString());
-        var defender = CompetitorManager.GetCompetitor(game.Defender.ToString());
-
-        if (challenger == null || defender == null)
-        {
-            throw new Exception();
-        }
-        var cTemp = challenger.Points;
-        var dTemp = defender.Points;
-        if (game.ScoreChallenger > game.ScoreDefender)
-        {
-            EloCalculator.CalculateEloRating(ref cTemp, ref dTemp, 30, 1);
-        }
-        else
-        {
-            EloCalculator.CalculateEloRating(ref cTemp, ref dTemp, 30, 0);
-        }
-        challenger.Points = cTemp;
-        defender.Points = dTemp;
-
-        challenger.GamesPlayed++;
-        defender.GamesPlayed++;
-    }
-
 }
