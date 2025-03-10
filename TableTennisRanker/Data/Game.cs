@@ -54,15 +54,15 @@ public class Game()
     private static void CalculateEloRating(ref int challenger, ref int defender, int K, double gameResult)
     {
 
-        // Calculate the Winning Probability of Player A
+        // Calculate the Winning Probability
         var winningProbabilityChallenger = Probability(defender, challenger);
 
-        // Calculate the Winning Probability of Player B
-        var winningProbabilityDefender = Probability(challenger, defender);
+        var temp = (int)(K * (gameResult - winningProbabilityChallenger));
+        var temp2 = temp * (temp > 0 ? -1 : 1);
 
-        // Update the Elo Ratings
-        challenger = (int)(challenger + K * (gameResult - winningProbabilityChallenger));
-        defender = (int)(defender + K * ((1 - gameResult) - winningProbabilityDefender));
+
+        challenger += temp;
+        defender += temp2;
     }
 
     // Function to calculate the Probability
