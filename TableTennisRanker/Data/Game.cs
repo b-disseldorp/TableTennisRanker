@@ -58,7 +58,7 @@ public class Game()
         var winningProbabilityChallenger = Probability(defender, challenger);
 
         var temp = (int)(K * (gameResult - winningProbabilityChallenger));
-        var temp2 = temp * (temp > 0 ? -1 : 1);
+        var temp2 = temp * -1;
 
 
         challenger += temp;
