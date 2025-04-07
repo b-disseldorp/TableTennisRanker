@@ -11,11 +11,11 @@ public class Game()
         ScoreChallenger = scoreChallenger;
         ScoreDefender = scoreDefender;
     }
-    public int Id { get; set; }
-    public Competitor Challenger { get; set; } = null!;
-    public Competitor Defender { get; set; } = null!;
-    public int ScoreChallenger { get; set; }
-    public int ScoreDefender { get; set; }
+    public int Id { get; init; }
+    public Competitor Challenger { get; init; } = null!;
+    public Competitor Defender { get; init; } = null!;
+    public int ScoreChallenger { get; init; }
+    public int ScoreDefender { get; init; }
     public int ChallengerEloPoints { get; set; }
     public int DefenderEloPoints { get; set; }
 
@@ -30,15 +30,15 @@ public class Game()
         }
         var challengerFutureEloPoints = challenger.EloPoints;
         var defenderFutureEloPoints = defender.EloPoints;
-        double gameResult = 0;
+        double gameResult;
         if (ScoreChallenger > ScoreDefender)
         {
-            double score = (double)ScoreDefender / ScoreChallenger/2;
+            var score = (double)ScoreDefender / ScoreChallenger/2;
             gameResult = 1-score;
         }
         else
         {
-            double score = (double)ScoreChallenger / ScoreDefender/2;
+            var score = (double)ScoreChallenger / ScoreDefender/2;
             gameResult = 0+score;
         }
         CalculateEloRating(ref challengerFutureEloPoints, ref defenderFutureEloPoints, 30, gameResult);
@@ -54,13 +54,13 @@ public class Game()
     // Function to calculate Elo rating
     // K is a constant.
     // outcome determines the outcome: 1 for Player A win, 0 for Player B win, 0.5 for draw.
-    private static void CalculateEloRating(ref int challenger, ref int defender, int K, double gameResult)
+    private static void CalculateEloRating(ref int challenger, ref int defender, int k, double gameResult)
     {
 
         // Calculate the Winning Probability
         var winningProbabilityChallenger = Probability(defender, challenger);
 
-        var temp = (int)(K * (gameResult - winningProbabilityChallenger));
+        var temp = (int)(k * (gameResult - winningProbabilityChallenger));
         var temp2 = temp * -1;
 
 
