@@ -30,15 +30,18 @@ public class Game()
         }
         var challengerFutureEloPoints = challenger.EloPoints;
         var defenderFutureEloPoints = defender.EloPoints;
+        double gameResult = 0;
         if (ScoreChallenger > ScoreDefender)
         {
-            CalculateEloRating(ref challengerFutureEloPoints, ref defenderFutureEloPoints, 30, 1);
+            double score = (double)ScoreDefender / ScoreChallenger/2;
+            gameResult = 1-score;
         }
         else
         {
-            CalculateEloRating(ref challengerFutureEloPoints, ref defenderFutureEloPoints, 30, 0);
+            double score = (double)ScoreChallenger / ScoreDefender/2;
+            gameResult = 0+score;
         }
-
+        CalculateEloRating(ref challengerFutureEloPoints, ref defenderFutureEloPoints, 30, gameResult);
         ChallengerEloPoints = challengerFutureEloPoints - challenger.EloPoints;
         DefenderEloPoints = defenderFutureEloPoints - defender.EloPoints;
         challenger.EloPoints = challengerFutureEloPoints;
