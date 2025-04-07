@@ -51,6 +51,22 @@ public class Game()
         defender.GamesPlayed++;
     }
 
+    public void RemovePoints(CompetitorManager competitorManager)
+    {
+        var challenger = competitorManager.GetCompetitor(Challenger.ToString());
+        var defender = competitorManager.GetCompetitor(Defender.ToString());
+
+        if (challenger == null || defender == null)
+        {
+            return;
+        }
+        challenger.GamesPlayed--;
+        defender.GamesPlayed--;
+
+        challenger.EloPoints -= ChallengerEloPoints;
+        defender.EloPoints -= DefenderEloPoints;
+    }
+
     // Function to calculate Elo rating
     // K is a constant.
     // outcome determines the outcome: 1 for Player A win, 0 for Player B win, 0.5 for draw.
@@ -73,5 +89,10 @@ public class Game()
     {
         // Calculate and return the expected score
         return 1.0 / (1 + Math.Pow(10, (rating1 - rating2) / 400.0));
+    }
+
+    public override string ToString()
+    {
+        return Id + ": " + Challenger + " v " + Defender;
     }
 }

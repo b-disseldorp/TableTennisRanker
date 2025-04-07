@@ -1,8 +1,10 @@
 @page "/Games"
+@using Microsoft.AspNetCore.Components.Authorization
 @using TableTennisRanker.Data
 
 @inject CompetitorManager CompetitorManager
 @inject IFileService FileService
+@inject AuthenticationStateProvider Auth
 
 <PageTitle>Games</PageTitle>
 
@@ -59,8 +61,29 @@
         </RadzenColumn>
     </RadzenRow>
 </div>
+@if (Admin)
+{
+    <div class="rz-p-0 rz-p-md-12">
+        <RadzenRow Gap="1rem">
+            <RadzenColumn Size="12" SizeSM="6">
+                <RadzenStack>
+                    <RadzenFormField Text="Challenger">
+                        <ChildContent>
+                            <RadzenDropDown Name="Game" Data="@_games" @bind-Value="@_selectedForRemoval" />
+                        </ChildContent>
+                        <Helper>
+                            <RadzenRequiredValidator Component="Challenger" Text="First name is required." />
+                        </Helper>
+                    </RadzenFormField>
+                    <RadzenButton ButtonType="ButtonType.Submit" Text="Remove" Click="OnRemove"></RadzenButton>
+                </RadzenStack>
+            </RadzenColumn>
+        </RadzenRow>
+    </div>
+}
 
 @code {
+    private bool Admin { get; set; }
 
     List<Game> _allGames = null!;
     IQueryable<Game>? _games;
@@ -69,6 +92,7 @@
     readonly Game _game = new();
 
     IEnumerable<string> _competitors = null!;
+    Game? _selectedForRemoval;
     string _selectedChallenger = "";
     string _selectedDefender = "";
     int _selectedScoreChallenger;
@@ -78,6 +102,7 @@
     {
         await base.OnInitializedAsync();
 
+        Admin = (await Auth.GetAuthenticationStateAsync()).User.Identity?.Name == "ODIN\\B.Disseldorp";
         _allGames = await FileService.LoadGames() ?? [];
         _games = new EnumerableQuery<Game>(_allGames);
         _selectedGames = [_games.FirstOrDefault()];
@@ -99,6 +124,19 @@
 
         _games = new EnumerableQuery<Game>(_allGames);
         currentGame.GivePoints(CompetitorManager);
+        await FileService.SaveGames(_allGames);
+        await FileService.SaveCompetitors(CompetitorManager.Competitors);
+    }
+
+    async Task OnRemove()
+    {
+        if (_selectedForRemoval == null)
+        {
+            return;
+        }
+        _selectedForRemoval.RemovePoints(CompetitorManager);
+        _allGames.Remove(_selectedForRemoval);
+        _games = new EnumerableQuery<Game>(_allGames);
         await FileService.SaveGames(_allGames);
         await FileService.SaveCompetitors(CompetitorManager.Competitors);
     }

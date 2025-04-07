@@ -1,8 +1,10 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Components.Authorization
 @using TableTennisRanker.Data
 
 @inject IFileService FileService
 @inject CompetitorManager CompetitorManager
+@inject AuthenticationStateProvider Auth
 
 <PageTitle>Home</PageTitle>
 
@@ -39,10 +41,32 @@
         </RadzenStack>
     </RadzenTemplateForm>
 </div>
+@if (Admin)
+{
+    <div class="rz-p-0 rz-p-md-12">
+        <RadzenRow Gap="1rem">
+            <RadzenColumn Size="12" SizeSM="6">
+                <RadzenStack>
+                    <RadzenFormField Text="Challenger">
+                        <ChildContent>
+                            <RadzenDropDown Name="Challenger" Data="@_competitors" @bind-Value="@_selectedForRemoval" />
+                        </ChildContent>
+                        <Helper>
+                            <RadzenRequiredValidator Component="Challenger" Text="First name is required." />
+                        </Helper>
+                    </RadzenFormField>
+                    <RadzenButton ButtonType="ButtonType.Submit" Text="Remove" Click="OnRemove"></RadzenButton>
+                </RadzenStack>
+            </RadzenColumn>
+        </RadzenRow>
+    </div>
+}
 
 @code {
     IQueryable<Competitor>? _competitors;
     IList<Competitor?>? _selectedCompetitors;
+    Competitor? _selectedForRemoval;
+    private bool Admin { get; set; }
 
     readonly Competitor _competitor = new();
 
@@ -50,8 +74,9 @@
     {
         await base.OnInitializedAsync();
 
+        Admin = (await Auth.GetAuthenticationStateAsync()).User.Identity?.Name == "ODIN\\B.Disseldorp";
         CompetitorManager.Competitors = await FileService.LoadCompetitors() ?? [];
-        _competitors = new EnumerableQuery<Competitor>(CompetitorManager.Competitors);
+        _competitors = new EnumerableQuery<Competitor?>(CompetitorManager.Competitors);
         _selectedCompetitors = [_competitors.FirstOrDefault()];
     }
 
@@ -59,12 +84,19 @@
     {
         competitor.Id = CompetitorManager.Competitors.LastOrDefault() == null ? 0 : CompetitorManager.Competitors.Last().Id + 1;
         CompetitorManager.Competitors.Add(new Competitor(competitor.Id, competitor.FirstName, competitor.LastName, competitor.EloPoints, competitor.GamesPlayed));
-        _competitors = new EnumerableQuery<Competitor>(CompetitorManager.Competitors);
+        _competitors = new EnumerableQuery<Competitor?>(CompetitorManager.Competitors);
         await FileService.SaveCompetitors(CompetitorManager.Competitors);
     }
 
     void OnInvalidSubmit(FormInvalidSubmitEventArgs args)
     {
 
+    }
+
+    async Task OnRemove()
+    {
+        if (_selectedForRemoval != null) CompetitorManager.RemoveCompetitor(_selectedForRemoval);
+        _competitors = new EnumerableQuery<Competitor?>(CompetitorManager.Competitors);
+        await FileService.SaveCompetitors(CompetitorManager.Competitors);
     }
 }
