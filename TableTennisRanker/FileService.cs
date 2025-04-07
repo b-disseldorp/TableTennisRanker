@@ -10,13 +10,13 @@ public class FileService(IFileSystem fileSystem) : IFileService
 
     private const string path = @"C:\TTR";
 
-    public async Task SaveCompetitors(List<Competitor> competitors)
+    public async Task SaveCompetitors(List<Competitor?> competitors)
     {
         await using var createStream = FileSystem.File.Create($@"{path}\competitors.json");
         await JsonSerializer.SerializeAsync(createStream, competitors);
     }
 
-    public async Task<List<Competitor>?> LoadCompetitors()
+    public async Task<List<Competitor?>?> LoadCompetitors()
     {
         const string jsonFile = $@"{path}\competitors.json";
         if (!FileSystem.File.Exists(jsonFile))
